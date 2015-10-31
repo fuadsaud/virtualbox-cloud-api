@@ -1,7 +1,10 @@
-const exec      = require('child_process').exec
-const manager   = 'VBoxManage'
-const hds_dir   = process.env.HDS_DIR || './hds'
-const R         = require('ramda')
+const exec    = require('child_process').exec
+const manager = 'VBoxManage'
+const hds_dir = process.env.HDS_DIR || './hds'
+const R       = require('ramda')
+const sqlite3 = require('sqlite3').verbose()
+
+const db = new sqlite3.Database('./db.sqlite3')
 
 module.exports = {
     create: function(box_name, os, opts) {
