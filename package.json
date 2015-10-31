@@ -17,7 +17,8 @@
     "mu2": "^0.5.20",
     "node-vagrant": "^1.0.6",
     "ramda": "^0.11.0",
-    "sqlite3": "^3.1.0"
+    "sqlite3": "^3.1.0",
+    "shell-escape": "~0.2.0"
   },
   "devDependencies": {
     "nodemon": "^1.8.0"
