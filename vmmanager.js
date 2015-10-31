@@ -7,7 +7,7 @@ const sqlite3 = require('sqlite3').verbose()
 const db = new sqlite3.Database('./db.sqlite3')
 
 module.exports = {
-    create: function(box_name) {
+    create: function(box_name, os) {
 
         var cmd = new Commander()
 
@@ -23,7 +23,7 @@ module.exports = {
 
         //TODO remove this shit, from here
         var base_hd_name = hds_dir + '/test.vdi'
-        var hd_name = hds_dir + '/another_hd.vdi'
+        var hd_name = hds_dir + '/' + box_name +'.vdi'
         // until here
 
         var command = manager + ' clonehd ' + base_hd_name + ' ' + hd_name
@@ -33,6 +33,15 @@ module.exports = {
             {
                 storagectl: 'Sata Controller', port: 0, device: 0,
                 type: 'hdd', medium: hd_name
+            }
+        )
+
+
+        cmd.addCommand(
+            manager + ' modifyvm ' + box_name,
+            {
+                nic1: 'bridged',
+                bridgeadapter1: 'e1000g0'
             }
         )
 
