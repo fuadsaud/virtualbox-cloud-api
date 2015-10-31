@@ -2,8 +2,7 @@ const express    = require('express')
 const bodyParser = require('body-parser')
 const morgan     = require('morgan')
 const R          = require('ramda')
-const vagrant    = require('./vagrant')
-
+const vmManager  = require('./vmmanager')
 const app = express()
 const port = process.env.PORT || 7000
 
@@ -20,9 +19,11 @@ app.use(morgan('dev'))
 app.use(bodyParser.json())
 
 app.get('/boxes', function (req, res) {
-  vagrantfile = vagrant.vagrantfile({ box: 'precise64' })
-
-  console.log(vagrantfile)
+    try {
+        vmManager.create('machine', {})
+    } catch (e) {
+        console.log(e)
+    }
 })
 
 app.get('/boxes/:box_id', function (req, res) {
