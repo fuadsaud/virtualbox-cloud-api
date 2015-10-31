@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "server": "foreman start --port 7000",
+    "start": "foreman start --port 7000",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Fuad Saud",
