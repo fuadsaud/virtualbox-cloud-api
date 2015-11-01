@@ -31,4 +31,4 @@ hds/*
 
 #vim swap files
 *.swp
-db.sqlite3
+*.sqlite3
