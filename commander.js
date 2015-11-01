@@ -2,7 +2,6 @@ const exec        = require('child_process').exec
 const shellescape = require('shell-escape')
 const logger      = require('./logger')
 
-
 function Commander() {
     var commands = [];
 
@@ -25,6 +24,7 @@ function Commander() {
 
     this.execute = function() {
         var command = commands.shift()
+
         if (command) {
             logger.logInfo('Executing: ' + command)
             exec(command, function(err, stdout, stderr) {
