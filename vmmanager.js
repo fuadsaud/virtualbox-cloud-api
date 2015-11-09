@@ -1,56 +1,73 @@
-const exec    = require('child_process').exec
-const manager = 'VBoxManage'
-const hds_dir = process.env.HDS_DIR || './hds'
-const R       = require('ramda')
-const sqlite3 = require('sqlite3').verbose()
-
-const db = new sqlite3.Database('./db.sqlite3')
+const Model       = require('./models/model')
+const Promise     = require('promise')
+const VBoxManager = require('./vboxmanager')
 
 module.exports = {
-    create: function(box_name, os, opts) {
-        default_opts = {
-        }
+  create: function(boxName, osId) {
+    return new Promise(function(fulfill, reject) {
+      if (boxName == undefined) {
+        reject('box name must be informed')
+        return;
+      }
+      if (osId == undefined) {
+        reject('OS ID must be informed')
+        return;
+      }
 
-        opts = R.merge(default_opts, opts);
+      var osModel = new Model('oss');
+      var vmModel = new Model('vms');
 
-
-        exec(manager + ' createvm  --name ' + box_name + ' --ostype Other --register', function(err, stdout, stderr) {
-            if (err != null) {
-                throw new Error(err)
-            }
-            exec(manager + ' storagectl ' + box_name + ' --name "SATA Controller" --add sata --controller IntelAHCI ', function(err, stdout, stderr) {
-                if (err != null) {
-                    throw new Error(err)
-                }
-                //TODO remove this shit
-                var base_hd_name = hds_dir + '/test.vdi'
-                var hd_name = hds_dir + '/new_hd.vdi'
-                var command = manager + ' clonehd ' + base_hd_name + ' ' + hd_name + ' --format VDI'
-                console.log(command)
-                exec(command, function(err, stdout, stderr) {
-                    if (err != null) {
-                        throw new Error(err)
-                    }
-                    var command = manager + ' storageattach ' + box_name + ' --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium ' + hd_name
-                    exec(command, function(err, stdout, stderr) {
-                        if (err != null) {
-                            throw new Error(err)
-                        }
-                    })
+      vmModel.fetchAll({name: boxName}).then(function(result) {
+        if (result.length == 0) {
+          osModel.find(osId).then(function(os) {
+            if (os != undefined) {
+              vmModel.insert({name: boxName, os_id: osId, provisioned: 0}).then(function(result) {
+                VBoxManager.create({name: boxName, os: os}).then(function() {
+                  vmModel.update(result, {provisioned: 1})
                 })
+                fulfill(true)
+              }, function(message) { reject(message) })
+            } else {
+              reject('Invalid OS')
+            }
+          }, function(message) { reject(message) })
+        } else {
+          reject('Box name already exists')
+        }
+      }, function(message) { reject(message) })
+    })
+  },
+
+  retrieve: function(id) {
+    return (new Model('vms')).find(id)
+  },
+
+  retrieveList: function() {
+    return (new Model('vms')).fetchAll()
+  },
+
+  update: function(id, data) {
+  },
+
+  delete: function(id) {
+    return new Promise(function(fulfill, reject) {
+      var vms = new Model('vms')
+      vms.find(id).then(function(vm) {
+        result = false
+        if (vm && vm.provisioned == 1) {
+          if (vm.status == 1) {
+            vms.update(id, {status: 0}).then(function() {
+              VBoxManager.delete(vm.name).then(function() {
+                vms.delete(id)
+              })
+            }, function(msg) {
+              reject(msg)
             })
-        })
-
-
-        console.log('AKI')
-    },
-
-    retrieve: function() {
-    },
-
-    update: function() {
-    },
-
-    delete: function() {
-    }
+          }
+          result = true
+        }
+        fulfill(result)
+      })
+    })
+  }
 }
