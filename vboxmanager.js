@@ -33,10 +33,14 @@ module.exports = {
       storagectl: 'Sata Controller', port: 0, device: 0,
       type: 'hdd', medium: hd_name
     })
+
     cmd.addCommand([manager, 'modifyvm', vm.name], {
       nic1: 'bridged',
       bridgeadapter1: net_device
     })
+
+    cmd.addCommand([manager, 'modifyvm', vm.name], {vrde: 'on', vrdeport: vm.port})
+
     return cmd.execute()
   },
 
@@ -44,5 +48,19 @@ module.exports = {
     var cmd = new Commander()
     cmd.addCommand([manager, 'unregistervm', name], {delete: null})
     return cmd.execute()
+  },
+
+  start: function(name) {
+    var cmd = new Commander();
+
+    cmd.addCommand([manager, 'startvm', name], {type: 'headless'});
+    return cmd.execute();
+  },
+
+  stop: function(name) {
+    var cmd = new Commander();
+
+    cmd.addCommand([manager, 'controlvm', name, 'savestate']);
+    return cmd.execute();
   }
 }

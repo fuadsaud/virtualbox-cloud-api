@@ -7,6 +7,7 @@ const logger     = require('./logger')
 
 const app = express()
 const port = process.env.PORT || 7000
+const address = process.env.ADDRESS || '127.0.0.1'
 
 
 logger.logInfo('Starting up HTTP server listening on port ' + port)
@@ -55,4 +56,24 @@ app.delete('/boxes/:box_id', function(req, res) {
   }, function(msg) {
     res.send(500).send({error: 'Internal Error'})
   })
+})
+
+app.get('/boxes/:box_id/start', function(req, res) {
+  vmManager.start(req.params.box_id).then(function(result) {
+    if (result) {
+      res.send({message: 'VmBox started at http://' + address + ':' + result.port})
+    } else {
+      res.status(404).send({error: 'Box not exists'});
+    }
+  });
+})
+
+app.get('/boxes/:box_id/stop', function(req, res) {
+  vmManager.stop(req.params.box_id).then(function(result) {
+    if (result) {
+      res.send({message: 'VmBox was stoped'})
+    } else {
+      res.status(404).send({error: 'Box not exists'});
+    }
+  });
 })

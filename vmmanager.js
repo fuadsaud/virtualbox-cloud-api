@@ -21,12 +21,17 @@ module.exports = {
         if (result.length == 0) {
           osModel.find(osId).then(function(os) {
             if (os != undefined) {
-              vmModel.insert({name: boxName, os_id: osId, provisioned: 0}).then(function(result) {
-                VBoxManager.create({name: boxName, os: os}).then(function() {
-                  vmModel.update(result, {provisioned: 1})
-                })
-                fulfill(true)
-              }, function(message) { reject(message) })
+              vmModel.fetchAll([], 'MAX(port) as port').then(function(result) {
+                console.log(result);
+
+                var port = parseInt(result[0].port ? result[0].port + 1 : 10000 );
+                vmModel.insert({name: boxName, os_id: osId, provisioned: 0, port: port}).then(function(result) {
+                  VBoxManager.create({name: boxName, port: port, os: os}).then(function() {
+                    vmModel.update(result, {provisioned: 1})
+                    fulfill(true)
+                  })
+                }, function(message) { reject(message) })
+              });
             } else {
               reject('Invalid OS')
             }
@@ -67,6 +72,38 @@ module.exports = {
           result = true
         }
         fulfill(result)
+      })
+    })
+  },
+
+  start: function(id) {
+    return new Promise(function(fulfill, reject) {
+      var vms = new Model('vms')
+      vms.find(id).then(function(vm) {
+        console.log(vm);
+        if (vm && vm.provisioned == 1 && vm.status == 1) {
+          VBoxManager.start(vm.name).then(function(result) {
+            fulfill(vm)
+          });
+        } else {
+          fulfill(false)
+        }
+      })
+    })
+  },
+  stop: function(id) {
+    return new Promise(function(fulfill, reject) {
+      var vms = new Model('vms')
+      vms.find(id).then(function(vm) {
+        if (vm && vm.provisioned == 1 && vm.status == 1) {
+          VBoxManager.stop(vm.name).then(function(result) {
+            fulfill(true)
+          }, function() {
+            fulfill(true)
+          });
+        } else {
+          fulfill(false)
+        }
       })
     })
   }

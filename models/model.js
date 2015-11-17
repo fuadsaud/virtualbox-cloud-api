@@ -24,8 +24,11 @@ function Model(tableName) {
     })
   }
 
-  this.fetchAll = function(where) {
-    var sql = 'SELECT * FROM ' + table;
+  this.fetchAll = function(where, cols) {
+    if (!cols) {
+      cols = '*'
+    }
+    var sql = 'SELECT ' + cols + ' FROM ' + table;
     var values = [];
     var conditions = [];
     for (var i in where) {
