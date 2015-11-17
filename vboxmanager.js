@@ -27,7 +27,7 @@ module.exports = {
     var hd_name = hds_dir + '/' + vm.name +'.vdi'
 
 
-    cmd.addCommand([manager, 'clonehd', base_hd_name, hd_name ], { format: 'VDI' })
+    cmd.addCommand([manager, 'clonehd', base_hd_name, hd_name ], { format: vm.os.hd_format })
 
     cmd.addCommand([manager, 'storageattach', vm.name], {
       storagectl: 'Sata Controller', port: 0, device: 0,
@@ -39,7 +39,13 @@ module.exports = {
       bridgeadapter1: net_device
     })
 
-    cmd.addCommand([manager, 'modifyvm', vm.name], {vrde: 'on', vrdeport: vm.port})
+    cmd.addCommand([manager, 'modifyvm', vm.name], {
+      memory: vm.memory,
+    })
+
+    cmd.addCommand([manager, 'modifyvm', vm.name], {
+      vrde: 'on', vrdeport: vm.port, vrdevideochannelquality: 100
+    })
 
     return cmd.execute()
   },

@@ -39,8 +39,8 @@ app.get('/boxes/:box_id', function (req, res) {
 
 app.post('/boxes', function (req, res) {
   // const machine = vagrant.create({ cwd: boxes_dir, env: {} })
-  vmManager.create(req.body.name, req.body.os_id).then(function(){
-    res.status(200).send({message: 'The box will be create soon'})
+  vmManager.create(req.body.name, req.body.os_id, req.body.memory).then(function(id){
+    res.status(200).send({id: id})
   }, function(message) {
     res.status(400).send({error: message})
   })

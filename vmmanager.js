@@ -3,7 +3,10 @@ const Promise     = require('promise')
 const VBoxManager = require('./vboxmanager')
 
 module.exports = {
-  create: function(boxName, osId) {
+  create: function(boxName, osId, memory) {
+    if (!memory) {
+      memory = '512'
+    }
     return new Promise(function(fulfill, reject) {
       if (boxName == undefined) {
         reject('box name must be informed')
@@ -26,9 +29,9 @@ module.exports = {
 
                 var port = parseInt(result[0].port ? result[0].port + 1 : 10000 );
                 vmModel.insert({name: boxName, os_id: osId, provisioned: 0, port: port}).then(function(result) {
-                  VBoxManager.create({name: boxName, port: port, os: os}).then(function() {
+                  VBoxManager.create({name: boxName, port: port, os: os, memory: memory}).then(function() {
                     vmModel.update(result, {provisioned: 1})
-                    fulfill(true)
+                    fulfill(result)
                   })
                 }, function(message) { reject(message) })
               });
