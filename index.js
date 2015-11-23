@@ -61,7 +61,7 @@ app.delete('/boxes/:box_id', function(req, res) {
 app.get('/boxes/:box_id/start', function(req, res) {
   vmManager.start(req.params.box_id).then(function(result) {
     if (result) {
-      res.send({message: 'VmBox started at http://' + address + ':' + result.port})
+      res.send({message: 'VmBox started at ' + address + ':' + result.port})
     } else {
       res.status(404).send({error: 'Box not exists'});
     }
